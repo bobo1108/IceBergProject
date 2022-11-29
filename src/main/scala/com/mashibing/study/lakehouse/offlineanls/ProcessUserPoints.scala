@@ -23,7 +23,7 @@ object ProcessUserPoints {
         | create catalog hadoop_iceberg with (
         |  'type'='iceberg',
         |  'catalog-type'='hadoop',
-        |  'warehouse'='hdfs://mycluster/lakehousedata'
+        |  'warehouse'='hdfs://hadoop102:9000/lakehousedata'
         | )
       """.stripMargin)
 
@@ -43,6 +43,7 @@ object ProcessUserPoints {
     //5.转换成DataStream ，打印结果
     val userPointDS: DataStream[(Boolean, Row)] = tblEnv.toRetractStream[Row](userPointsTbl)
 
+    userPointDS.print()
     //6.将结果写出到MySQL 对应的表中
     /**
       *  在mysql 中创建表： user_points
@@ -50,7 +51,7 @@ object ProcessUserPoints {
       */
     val jdbcOutputFormat: JdbcOutputFormat = JdbcOutputFormat.buildJdbcOutputFormat()
       .setDrivername("com.mysql.jdbc.Driver")
-      .setDBUrl("jdbc:mysql://node2:3306/resultdb?user=root&password=123456")
+      .setDBUrl("jdbc:mysql://hadoop104:3306/resultdb?user=root&password=123&characterEncoding=utf8")
       .setQuery("insert into user_points values (?,?,?,?)")
       .finish()
 

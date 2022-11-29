@@ -14,7 +14,7 @@ object CombinDataAndRemoveOldSnap {
 
     val conf = new Configuration()
 
-    val catalog = new HadoopCatalog(conf,"hdfs://mycluster/lakehousedata")
+    val catalog = new HadoopCatalog(conf,"hdfs://hadoop102:9000/lakehousedata")
 
     //1.准备Iceberg表
     val table1: Table = catalog.loadTable(TableIdentifier.of("icebergdb","DWD_BROWSELOG"))

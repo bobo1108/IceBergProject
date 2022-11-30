@@ -97,8 +97,8 @@ object ProcessBrowseLogInfoToDM {
 
     //6.将 dmResult 写出到Clickhouse中
     /**
-      *  clickhouse 表：
-      * create table dm_product_visit_info(
+      *  clickhouse 表：本地表
+      * create table dm_product_visit_info on cluster clickhouse_cluster_3shards_1replicas(
       * current_dt String,
       * window_start String,
       * window_end String,
@@ -106,9 +106,20 @@ object ProcessBrowseLogInfoToDM {
       * second_cat String,
       * product String,
       * product_cnt UInt32
-      * ) engine = MergeTree() order by current_dt;
+      * ) engine = ReplicatedMergeTree('/clickhouse/tables/{shard}/dm_product_visit_info','{replica}') order by current_dt;
+      *
+      * 分片表
+      * Create table dm_product_visit_info_all on cluster clickhouse_cluster_3shards_1replicas (
+      * current_dt String,
+      * window_start String,
+      * window_end String,
+      * first_cat String,
+      * second_cat String,
+      * product String,
+      * product_cnt UInt32
+      * )engine = Distributed(clickhouse_cluster_3shards_1replicas,default,dm_product_visit_info,product_cnt);
       */
-    val insertSQL = "insert into dm_product_visit_info (current_dt,window_start,window_end,first_cat,second_cat,product,product_cnt)" +
+    val insertSQL = "insert into dm_product_visit_info_all (current_dt,window_start,window_end,first_cat,second_cat,product,product_cnt)" +
       " values (?,?,?,?,?,?,?)"
 
     val cksink: SinkFunction[ProductVisitInfo] = MyClickhouseUtil.clickhouseSink[ProductVisitInfo](insertSQL, new JdbcStatementBuilder[ProductVisitInfo] {
